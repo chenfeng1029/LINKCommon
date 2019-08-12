@@ -61,8 +61,12 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base\BaseSql.vb" />
+    <Compile Include="Base\Entry.vb" />
     <Compile Include="Base\EmpowerLevel.vb" />
     <Compile Include="Base\SecuriVerify.vb" />
+    <Compile Include="Base\UserInfo.vb" />
+    <Compile Include="Base\UserSecurity.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
