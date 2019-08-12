@@ -55,7 +55,7 @@ Namespace Base
 
         Protected Overrides ReadOnly Property SecuriPass As Integer
             Get
-                Throw New NotImplementedException()
+                Return MSecuriPass
             End Get
         End Property
 
