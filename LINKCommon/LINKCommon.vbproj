@@ -64,6 +64,7 @@
     <Compile Include="Base\BaseSql.vb" />
     <Compile Include="Base\Entry.vb" />
     <Compile Include="Base\EmpowerLevel.vb" />
+    <Compile Include="Base\ErrorInfo.vb" />
     <Compile Include="Base\SecuriVerify.vb" />
     <Compile Include="Base\UserInfo.vb" />
     <Compile Include="Base\UserSecurity.vb" />

@@ -179,7 +179,7 @@ Namespace Base
 
 #End Region
 
-        #Region "从数据库获取记录集"
+#Region "从数据库获取记录集"
 
         ''' <summary>
         ''' 说明：执行查询SQL语句，返回记录集内存库表DataTable   
@@ -291,6 +291,108 @@ Namespace Base
         End Function
 
 #End Region
-        '
+
+#Region "对数据库更新操作"
+
+        ''' <summary>
+        ''' 创建时间：2019.8.23
+        ''' 说明：执行SQL命令，返回影响的记录数,执行错误返回-2     
+        ''' </summary>
+        ''' <param name="vSqlcon">sqlconnection链接变量</param>
+        ''' <param name="vCommandType">命令类型</param>
+        ''' <param name="vCommandText">命令执行语句</param>
+        ''' <param name="vSqlpara">参数数组</param>
+        ''' <returns>执行是否成功，执行失败返回异常值-2</returns>
+        ''' <remarks>程序集内部调用</remarks>
+        Friend Overloads Function ExecuteNonQuery(ByVal vSqlcon As SqlConnection,
+                                           ByVal vCommandType As CommandType,
+                                           ByVal vCommandText As String,
+                                           ByVal vSqlpara As SqlParameter()) As Integer
+            Dim vSqlcmd As New SqlCommand
+            Dim intsuc As Integer
+
+            Try
+                '//如果连接未打开，则打开连接
+                If vSqlcon.State <> ConnectionState.Open Then
+
+                    vSqlcon.Open()
+                End If
+
+                With vSqlcmd
+                    '//设置sqlcommand对应数据库连接
+                    .CommandTimeout = MConnectionTimeOut
+                    .Connection = vSqlcon
+                    .CommandText = vCommandText '//操作SQL命令
+                    .CommandType = vCommandType '//命令操作类型
+                    '//如果存在参数数组，则添加到sqlcommand
+                    If Not (vSqlpara Is Nothing) Then
+                        '  AttachParameters(vSqlcmd, vSqlpara)
+                        Dim p As SqlParameter
+                        For Each p In vSqlpara
+                            '//参数可输出也 可输入
+
+                            If p.Direction = ParameterDirection.InputOutput And p.Value Is Nothing Then
+                                p.Value = Nothing
+                            End If
+                            '对于存储过程，有些参数是输出 
+                            If p.Direction = ParameterDirection.Output Then
+                                '//sqlcommand添加参数变量
+                                vSqlcmd.Parameters.Add(p).Direction = ParameterDirection.Output
+                            Else
+                                '//sqlcommand添加参数变量
+                                vSqlcmd.Parameters.Add(p)
+                            End If
+
+                        Next
+                    End If
+                End With
+                '//执行
+                intsuc = vSqlcmd.ExecuteNonQuery()
+                '//清理参数
+                vSqlcmd.Parameters.Clear()
+                '//释放连接池
+                F_CancelConn(vSqlcon)
+            Catch ex As Exception
+                ExportMessage(ex.Message)
+                F_CancelConn(vSqlcon)
+                intsuc = -2
+            End Try
+            Return intsuc
+        End Function
+                ''' <summary>
+        ''' 创建时间: 2019.8.23
+        ''' 功能： 执行添加、删除、更新(无参数)操作，返回影响的记录数，执行错误返回-2  
+        ''' </summary>
+        ''' <param name="vCommandText">SQL执行语句</param>
+        ''' <param name="vCommandType">SQL语句类型，一般默认是语句，而不是存储过程</param>
+        ''' <param name="vConnection">数据库链接字符串(可选)</param>
+        ''' <returns>执行是否成功，执行失败返回异常值-2</returns>
+        ''' <remarks></remarks>
+        Public Overloads Function F_UpdateSQLCommand(ByVal vCommandText As String, ByVal vCommandType As CommandType,  ByVal vConnection As String) As Integer
+            
+            Dim intsuc As Integer
+            If MProcLevel > EmpowerLevel.Z Then
+                ExportMessage(ErrorInfo.ErrorMessage(1))
+                intsuc = -2
+            Else
+                Dim cn As New SqlConnection(vConnection)
+                Try
+                    If cn.State <> ConnectionState.Open Then
+                        cn.Open()
+                    End If
+                    '//执行不带参数数组的sql命令
+                    '//CType(Nothing, SqlParameter()),空白无用的参数数组字段
+                    intsuc = ExecuteNonQuery(cn, vCommandType, vCommandText, CType(Nothing, SqlParameter()))
+                    F_CancelConn(cn)
+                Catch ex As Exception
+                    F_CancelConn(cn)
+                    ExportMessage(ex.Message)
+                    intsuc = -2
+                End Try
+            End If
+            Return intsuc
+        End Function
+      
+#End Region
     End Class
 End Namespace
